@@ -146,28 +146,31 @@ class ComputerTool(BaseAnthropicTool):
                     "cmd": "command",
                     "alt": "alt",
                     "shift": "shift",
-                    "ctrl": "ctrl"
+                    "ctrl": "ctrl",
+                    # Add more key mappings as needed
                 }
 
                 try:
                     if "+" in text:
-                        # Handle combinations like "ctrl+c"
-                        keys = text.split("+")
+                        # Handle combinations like "cmd+shift+t" or "ctrl+alt+del"
+                        keys = text.lower().split("+")
                         mapped_keys = [key_map.get(k.strip(), k.strip()) for k in keys]
+                        
+                        # Use keyboard.press_and_release for the combination
                         await asyncio.get_event_loop().run_in_executor(
                             None, keyboard.press_and_release, '+'.join(mapped_keys)
                         )
                     else:
                         # Handle single keys
-                        mapped_key = key_map.get(text, text)
+                        mapped_key = key_map.get(text.lower(), text)
                         await asyncio.get_event_loop().run_in_executor(
                             None, keyboard.press_and_release, mapped_key
                         )
 
-                    return ToolResult(output=f"Pressed key: {text}", error=None, base64_image=None)
+                    return ToolResult(output=f"Pressed key combination: {text}", error=None, base64_image=None)
 
                 except Exception as e:
-                    return ToolResult(output=None, error=str(e), base64_image=None)
+                    return ToolResult(output=None, error=f"Failed to press keys: {str(e)}", base64_image=None)
             elif action == "type":
                 results: list[ToolResult] = []
                 for chunk in chunks(text, TYPING_GROUP_SIZE):
