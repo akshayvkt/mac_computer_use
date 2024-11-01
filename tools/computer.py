@@ -132,43 +132,14 @@ class ComputerTool(BaseAnthropicTool):
                 raise ToolError(output=f"{text} must be a string")
 
             if action == "key":
-                # Convert common key names to pyautogui format
-                key_map = {
-                    "Return": "enter",
-                    "space": "space",
-                    "Tab": "tab",
-                    "Left": "left",
-                    "Right": "right",
-                    "Up": "up",
-                    "Down": "down",
-                    "Escape": "esc",
-                    "command": "command",
-                    "cmd": "command",
-                    "alt": "alt",
-                    "shift": "shift",
-                    "ctrl": "ctrl",
-                    # Add more key mappings as needed
-                }
-
                 try:
-                    if "+" in text:
-                        # Handle combinations like "cmd+shift+t" or "ctrl+alt+del"
-                        keys = text.lower().split("+")
-                        mapped_keys = [key_map.get(k.strip(), k.strip()) for k in keys]
-                        
-                        # Use keyboard.press_and_release for the combination
-                        await asyncio.get_event_loop().run_in_executor(
-                            None, keyboard.press_and_release, '+'.join(mapped_keys)
-                        )
+                    # Handle hotkey combinations
+                    if '+' in text:
+                        keys = text.lower().split('+')
+                        pyautogui.hotkey(*keys)
                     else:
-                        # Handle single keys
-                        mapped_key = key_map.get(text.lower(), text)
-                        await asyncio.get_event_loop().run_in_executor(
-                            None, keyboard.press_and_release, mapped_key
-                        )
-
+                        pyautogui.press(text.lower())
                     return ToolResult(output=f"Pressed key combination: {text}", error=None, base64_image=None)
-
                 except Exception as e:
                     return ToolResult(output=None, error=f"Failed to press keys: {str(e)}", base64_image=None)
             elif action == "type":
