@@ -8,6 +8,9 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Literal, TypedDict
 from uuid import uuid4
+import logging
+import json
+from datetime import datetime
 
 from anthropic.types.beta import BetaToolComputerUse20241022Param
 
@@ -92,10 +95,55 @@ class ComputerTool(BaseAnthropicTool):
 
     def __init__(self):
         super().__init__()
+        self.setup_logging()
+        self.events = []
 
         self.width, self.height = pyautogui.size()
         assert self.width and self.height, "WIDTH, HEIGHT must be set"
         self.display_num = None  # macOS doesn't use X11 display numbers
+
+    def setup_logging(self):
+        # Create logs directory if it doesn't exist
+        log_dir = Path("logs")
+        log_dir.mkdir(exist_ok=True)
+        
+        # Setup file logging
+        self.log_file = log_dir / f"computer_events_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        
+        # Configure logging to both file and terminal
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s | %(levelname)s | %(message)s',
+            handlers=[
+                logging.FileHandler(self.log_file),
+                logging.StreamHandler()
+            ]
+        )
+        self.logger = logging.getLogger(__name__)
+
+    def log_event(self, event_type: str, details: dict):
+        timestamp = datetime.now().isoformat()
+        event = {
+            "timestamp": timestamp,
+            "type": event_type,
+            **details
+        }
+        self.events.append(event)
+        
+        # Log to file/terminal
+        self.logger.info(json.dumps(event))
+        
+        # Also save to structured JSON file
+        events_file = Path("logs/events.json")
+        try:
+            if events_file.exists():
+                stored_events = json.loads(events_file.read_text())
+            else:
+                stored_events = []
+            stored_events.append(event)
+            events_file.write_text(json.dumps(stored_events, indent=2))
+        except Exception as e:
+            self.logger.error(f"Failed to save event to JSON: {e}")
 
     async def __call__(
         self,
@@ -133,14 +181,33 @@ class ComputerTool(BaseAnthropicTool):
 
             if action == "key":
                 try:
-                    # Handle hotkey combinations
+                    # Log before attempt
+                    self.log_event("key_attempt", {
+                        "keys": text,
+                        "action": "key"
+                    })
+                    
+                    # Execute key press
                     if '+' in text:
                         keys = text.lower().split('+')
                         pyautogui.hotkey(*keys)
                     else:
                         pyautogui.press(text.lower())
+                    
+                    # Log success
+                    self.log_event("key_success", {
+                        "keys": text,
+                        "action": "key"
+                    })
+                    
                     return ToolResult(output=f"Pressed key combination: {text}", error=None, base64_image=None)
                 except Exception as e:
+                    # Log failure
+                    self.log_event("key_failure", {
+                        "keys": text,
+                        "action": "key",
+                        "error": str(e)
+                    })
                     return ToolResult(output=None, error=f"Failed to press keys: {str(e)}", base64_image=None)
             elif action == "type":
                 results: list[ToolResult] = []
