@@ -85,8 +85,10 @@ class ComputerTool(BaseAnthropicTool):
     @property
     def options(self) -> ComputerToolOptions:
         return {
-            "display_width_px": self.width,
-            "display_height_px": self.height,
+            # "display_width_px": self.width,
+            # "display_height_px": self.height,
+            "display_width_px": SCALE_DESTINATION['width'],  # 1366
+            "display_height_px": SCALE_DESTINATION['height'], # 768
             "display_number": self.display_num,
         }
 
@@ -163,6 +165,10 @@ class ComputerTool(BaseAnthropicTool):
                 raise ToolError(f"{coordinate} must be a tuple of length 2")
             if not all(isinstance(i, int) and i >= 0 for i in coordinate):
                 raise ToolError(f"{coordinate} must be a tuple of non-negative ints")
+
+            # Validate against FWXGA bounds first
+            if coordinate[0] > SCALE_DESTINATION['width'] or coordinate[1] > SCALE_DESTINATION['height']:
+                raise ToolError(f"Coordinates {coordinate} are out of bounds for {SCALE_DESTINATION['width']}x{SCALE_DESTINATION['height']}")
 
             x, y = self.scale_coordinates(ScalingSource.API, coordinate[0], coordinate[1])
 
@@ -241,7 +247,6 @@ class ComputerTool(BaseAnthropicTool):
                     "cliclick p",
                     take_screenshot=False,
                 )
-                import pdb; pdb.set_trace()
                 if result.output:
                     x, y = map(int, result.output.strip().split(","))
                     x, y = self.scale_coordinates(ScalingSource.COMPUTER, x, y)
