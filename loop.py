@@ -95,25 +95,6 @@ In a multi-step process, do not move to the next step until you complete your cu
 
 Very important: You're using an Apple MacBook Pro, so only try keys that would be present on a Mac device running MacOS. DO NOT TRY Windows or Linux-based keys.
 
-* Package management:
-  - Use homebrew for package installation
-  - Use curl for HTTP requests
-  - Use npm/yarn for Node.js packages
-  - Use pip for Python packages
-
-* Development tools:
-  - Standard Unix/Linux command line utilities
-  - Git for version control
-  - Docker for containerization
-  - Common build tools (make, cmake, etc.)
-
-* Output handling:
-  - For large output, redirect to tmp files: command > /tmp/output.txt
-  - Use grep with context: grep -n -B <before> -A <after> <query> <filename>
-  - Stream processing with awk, sed, and other text utilities
-
-* Note: Command line function calls may have latency. Chain multiple operations into single requests where feasible.
-
 * The current date is {datetime.today().strftime('%A, %B %-d, %Y')}.
 </SYSTEM_CAPABILITY>"""
 

@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2024-11-01T18:50:32.449442",
+    "type": "key_attempt",
+    "keys": "Return",
+    "action": "key"
+  },
+  {
+    "timestamp": "2024-11-01T18:50:32.619709",
+    "type": "key_success",
+    "keys": "Return",
+    "action": "key"
+  },
+  {
+    "timestamp": "2024-11-01T18:50:48.867724",
+    "type": "key_attempt",
+    "keys": "Command+l",
+    "action": "key"
+  },
+  {
+    "timestamp": "2024-11-01T18:50:49.026777",
+    "type": "key_success",
+    "keys": "Command+l",
+    "action": "key"
+  }
+]
